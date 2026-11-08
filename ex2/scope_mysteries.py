@@ -1,7 +1,7 @@
 from typing import Callable
 
 
-def mage_counter() -> Callable:
+def mage_counter() -> Callable[[], int]:
     count = 0
 
     def counter() -> int:
@@ -12,7 +12,7 @@ def mage_counter() -> Callable:
     return counter
 
 
-def spell_accumulator(initial_power: int) -> Callable:
+def spell_accumulator(initial_power: int) -> Callable[[int], int]:
     count = initial_power
 
     def counter(power: int) -> int:
@@ -23,7 +23,7 @@ def spell_accumulator(initial_power: int) -> Callable:
     return counter
 
 
-def enchantment_factory(enchantment: str) -> Callable:
+def enchantment_factory(enchantment: str) -> Callable[[str], str]:
     ench = enchantment
 
     def enchanter(item: str) -> str:
@@ -32,10 +32,10 @@ def enchantment_factory(enchantment: str) -> Callable:
     return enchanter
 
 
-def memory_vault() -> Callable:
-    dictionary: dict = {}
+def memory_vault() -> Callable[[str, str], dict[str, str]]:
+    dictionary: dict[str, str] = {}
 
-    def add(key: str, value: str) -> dict:
+    def add(key: str, value: str) -> dict[str, str]:
         dictionary[key] = value
         return dictionary
 
