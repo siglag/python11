@@ -1,6 +1,7 @@
 from functools import lru_cache, partial, reduce, singledispatch
 from operator import add, mul
-from typing import Callable, Any
+from collections.abc import Callable
+from typing import Any
 
 
 def spell_reducer(spells: list[int], operation: str) -> int:
@@ -15,20 +16,24 @@ def spell_reducer(spells: list[int], operation: str) -> int:
     try:
         return operations[operation](spells)
     except KeyError:
-        return 0
+        raise ValueError(f"Unknown operation: {operation}")
 
 
-def partial_enchanter(base_spell: Callable, power: int) -> Callable:
-    return partial(base_spell, power=power)
+def partial_enchanter(
+        base_enchantment: Callable[..., str]
+        ) -> dict[str, Callable[..., str]]:
+    return {
+        "fire": partial(base_enchantment, 50, "fire"),
+        "water": partial(base_enchantment, 50, "water"),
+        "earth": partial(base_enchantment, 50, "earth"),
+    }
 
 
-def memoized_fibonacci() -> Callable[[int], int]:
-    @lru_cache(maxsize=None)
-    def fib(n: int) -> int:
-        if n < 2:
-            return n
-        return fib(n-1) + fib(n-2)
-    return fib
+@lru_cache(maxsize=None)
+def memoized_fibonacci(n: int) -> int:
+    if n < 2:
+        return n
+    return memoized_fibonacci(n - 1) + memoized_fibonacci(n - 2)
 
 
 def spell_dispatcher() -> Callable[[Any], str]:
@@ -50,3 +55,39 @@ def spell_dispatcher() -> Callable[[Any], str]:
         return f"{len(spell)} spells"
 
     return dispatcher
+
+
+if __name__ == "__main__":
+    print("Testing spell reducer...")
+    spells = [10, 20, 30, 40]
+
+    print(f"Sum: {spell_reducer(spells, 'add')}")
+    print(f"Product: {spell_reducer(spells, 'multiply')}")
+    print(f"Max: {spell_reducer(spells, 'max')}")
+    print(f"Min: {spell_reducer(spells, 'min')}")
+
+    print("\nTesting partial enchanter...")
+
+    def base_enchantment(power: int, element: str, target: str) -> str:
+        return f"{target} receives {power} {element} power"
+
+    enchantments = partial_enchanter(base_enchantment)
+
+    print(enchantments["fire"]("dragon"))
+    print(enchantments["water"]("wizard"))
+    print(enchantments["earth"]("golem"))
+
+    print("\nTesting memoized fibonacci...")
+    print(f"Fib(0): {memoized_fibonacci(0)}")
+    print(f"Fib(1): {memoized_fibonacci(1)}")
+    print(f"Fib(10): {memoized_fibonacci(10)}")
+    print(f"Fib(15): {memoized_fibonacci(15)}")
+    print(f"Cache info: {memoized_fibonacci.cache_info()}")
+
+    print("\nTesting spell dispatcher...")
+    dispatcher = spell_dispatcher()
+
+    print(f"Damage spell: {dispatcher(42)}")
+    print(f"Enchantment: {dispatcher('fireball')}")
+    print(f"Multi-cast: {dispatcher([1, 2, 3])}")
+    print(dispatcher(3.14))
